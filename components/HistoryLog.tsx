@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SessionRecord } from '../types';
 import { Icons } from './Icon';
 
@@ -8,6 +8,19 @@ interface HistoryLogProps {
 }
 
 const HistoryLog: React.FC<HistoryLogProps> = ({ history, onClear }) => {
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const handleClearClick = () => {
+    if (isConfirming) {
+      onClear();
+      setIsConfirming(false);
+    } else {
+      setIsConfirming(true);
+      // Reset confirmation state after 3 seconds if not clicked
+      setTimeout(() => setIsConfirming(false), 3000);
+    }
+  };
+
   return (
     <div className="bg-gaming-800 rounded-2xl border border-gaming-700 flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b border-gaming-700 flex justify-between items-center bg-gaming-900/30">
@@ -17,11 +30,15 @@ const HistoryLog: React.FC<HistoryLogProps> = ({ history, onClear }) => {
         </div>
         {history.length > 0 && (
           <button 
-            onClick={onClear}
-            className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-red-500/10 transition-colors"
+            onClick={handleClearClick}
+            className={`text-xs flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all duration-200 ${
+              isConfirming 
+                ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20 font-bold' 
+                : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
+            }`}
           >
             <Icons.Trash size={14} />
-            مسح السجل
+            {isConfirming ? 'تأكيد المسح؟' : 'مسح السجل'}
           </button>
         )}
       </div>

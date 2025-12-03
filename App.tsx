@@ -89,9 +89,8 @@ const App: React.FC = () => {
   };
 
   const handleClearHistory = () => {
-    if (window.confirm('هل أنت متأكد من مسح سجل اليوم؟')) {
-      setHistory([]);
-    }
+    // Confirmation is now handled inside the HistoryLog component for better UX
+    setHistory([]);
   };
 
   // --- Derived State ---
