@@ -19,23 +19,18 @@ const ScreenCard: React.FC<ScreenCardProps> = ({ screen, hourlyRate, onStart, on
 
     if (screen.isActive && screen.startTime) {
       // Update immediately
-      const now = Date.now();
-      const diff = now - screen.startTime;
-      setElapsed(diff);
-      
-      // Calculate real-time estimated cost
-      const hours = diff / (1000 * 60 * 60);
-      setCurrentCost(hours * hourlyRate);
-
-      // Set interval for every second
-      interval = setInterval(() => {
-        const currentNow = Date.now();
-        const currentDiff = currentNow - screen.startTime!;
-        setElapsed(currentDiff);
+      const updateState = () => {
+        const now = Date.now();
+        const diff = now - screen.startTime!;
+        setElapsed(diff);
         
-        const currentHours = currentDiff / (1000 * 60 * 60);
-        setCurrentCost(currentHours * hourlyRate);
-      }, 1000);
+        // Calculate real-time estimated cost
+        const hours = diff / (1000 * 60 * 60);
+        setCurrentCost(hours * hourlyRate);
+      };
+
+      updateState(); // Initial call
+      interval = setInterval(updateState, 1000);
     } else {
       setElapsed(0);
       setCurrentCost(0);
@@ -54,6 +49,15 @@ const ScreenCard: React.FC<ScreenCardProps> = ({ screen, hourlyRate, onStart, on
     const pad = (num: number) => num.toString().padStart(2, '0');
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
+
+  const getDurationDetails = (ms: number) => {
+    const totalMinutes = Math.floor(ms / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return { hours, minutes };
+  }
+
+  const durationDetails = getDurationDetails(elapsed);
 
   return (
     <div className={`relative overflow-hidden rounded-2xl p-6 transition-all duration-300 border-2 ${
@@ -89,14 +93,29 @@ const ScreenCard: React.FC<ScreenCardProps> = ({ screen, hourlyRate, onStart, on
           </div>
         </div>
 
-        {/* Cost Display */}
-        <div className="flex justify-between items-center bg-gaming-900/50 rounded-xl p-4 border border-gaming-700/50">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Icons.Banknote size={18} />
-            <span className="text-sm">التكلفة الحالية</span>
+        {/* Cost Display with Details */}
+        <div className="bg-gaming-900/50 rounded-xl p-4 border border-gaming-700/50">
+          <div className="flex justify-between items-center mb-3 pb-3 border-b border-gaming-700/50">
+            <div className="flex items-center gap-2 text-gray-400">
+                <Icons.Banknote size={18} />
+                <span className="text-sm">التكلفة الحالية</span>
+            </div>
+            <div className="text-2xl font-bold text-gaming-accent">
+                {currentCost.toFixed(2)} <span className="text-xs text-gray-500">ج.م</span>
+            </div>
           </div>
-          <div className="text-xl font-bold text-gaming-accent">
-            {currentCost.toFixed(2)} <span className="text-xs text-gray-500">ج.م</span>
+          
+          <div className="space-y-1">
+             <div className="flex justify-between text-xs text-gray-400">
+                <span>سعر الساعة:</span>
+                <span className="font-mono text-gray-300">{hourlyRate} ج.م</span>
+             </div>
+             <div className="flex justify-between text-xs text-gray-400">
+                <span>تفاصيل المدة:</span>
+                <span className="font-mono text-gray-300">
+                   {durationDetails.hours} ساعة و {durationDetails.minutes} دقيقة
+                </span>
+             </div>
           </div>
         </div>
 
